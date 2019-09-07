@@ -34,7 +34,7 @@ pub const HTMLAttribute = struct {
     // this needs to be deallocated by the user after it is passed out
     // TODO: optimize this so that it gets the buffer size first, and then
     // copies in the characters
-    pub fn formattedBuf(self: *const Self) !Buffer {
+    pub fn formattedBuf(self: Self) !Buffer {
         var output = try Buffer.init(self.name.list.allocator, self.nameSlice());
         try output.append("='");
         try output.append(self.valueSlice());

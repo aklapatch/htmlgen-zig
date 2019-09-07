@@ -18,7 +18,7 @@ pub fn main() !void {
     defer test_attribute.deinit();
 
     try t_element.appendAttribute(test_attribute);
-    try t_element.appendContent(TagContent{ .Text = Buffer.init(std.debug.global_allocator, " test ") });
+    try t_element.appendContent(TagContent{ .Text = try Buffer.init(std.debug.global_allocator, " test ") });
 
     var test_str = try t_element.formattedBuf();
     defer test_str.deinit();
