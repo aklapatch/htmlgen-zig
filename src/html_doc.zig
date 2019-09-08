@@ -26,9 +26,24 @@ pub const HTMLDoc = struct {
         try self.elements.append(element);
     }
 
+    pub fn formattedBufSize(self: Self) usize {
+        var buff_size: usize = "<!DOCTYPE >\n".len + self.doc_type.len();
+
+        var elements = self.elements.toSliceConst();
+
+        for (elements) |element| {
+            buff_size += element.formattedBufSize();
+        }
+
+        return buff_size;
+    }
+
     pub fn formattedBuf(self: Self) !Buffer {
         // make the first part of the document
-        var output = try Buffer.init(self.elements.allocator, "<!DOCTYPE ");
+        var output = Buffer.initNull(self.elements.allocator);
+        try output.list.ensureCapacity(self.formattedBufSize());
+
+        try output.replaceContents("<!DOCTYPE ");
         try output.append(self.doc_type.toSliceConst());
         try output.append(">\n");
 
@@ -48,7 +63,7 @@ pub const HTMLDoc = struct {
 test "HTMLDoc init, formatting" {
     const name = "attrname";
     const value = "attrvalue";
-    const format_str = "<p attrname='attrvalue'> test </p>";
+    const format_str = "<p attrname='attrvalue'> test </p>\n";
 
     var test_attribute = try HTMLAttribute.init(std.debug.global_allocator, "attrname", "attrvalue");
     var t_element = try HTMLElement.init(std.debug.global_allocator, "p");
@@ -66,6 +81,7 @@ test "HTMLDoc init, formatting" {
 
     var doc = try t_doc.formattedBuf();
     defer doc.deinit();
+    std.debug.warn(" doc = {}\n", doc.toSliceConst());
 
     testing.expectEqualSlices(u8, doc.toSliceConst(), doc_str);
 }

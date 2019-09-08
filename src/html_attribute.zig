@@ -30,15 +30,22 @@ pub const HTMLAttribute = struct {
         self.value.deinit();
     }
 
+    pub fn formattedBufSize(self: Self) usize {
+        return self.name.len() + "=''".len + self.value.len();
+    }
+
     // returns the name and value formatted like they should be in an html document`
     // this needs to be deallocated by the user after it is passed out
-    // TODO: optimize this so that it gets the buffer size first, and then
-    // copies in the characters
     pub fn formattedBuf(self: Self) !Buffer {
-        var output = try Buffer.init(self.name.list.allocator, self.nameSlice());
+        var output = Buffer.initNull(self.name.list.allocator);
+        try output.list.ensureCapacity(self.formattedBufSize());
+
+        // insert characters into the buffer
+        try output.replaceContents(self.nameSlice());
         try output.append("='");
         try output.append(self.valueSlice());
-        try output.append("'");
+        try output.append("\'");
+
         return output;
     }
 };
